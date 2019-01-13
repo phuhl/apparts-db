@@ -1,0 +1,22 @@
+{
+  "name": "apparts-db",
+  "version": "1.0.0",
+  "description": "Database drivers for multiple databases",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@ph-uhl.com:Apparts/apparts-db.git"
+  },
+  "keywords": [
+    "db",
+    "database"
+  ],
+  "author": "Philipp Uhl",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "pg": "^7.8.0"
+  }
+}
