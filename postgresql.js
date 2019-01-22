@@ -139,7 +139,8 @@ class Transaction{
       q += ` LIMIT $${this._counter++}`;
       newVals.push(limit);
     }
-    this._result = this._dbs.query(q, newVals);
+    this._query = q;
+    this._params = newVals;
     return this;
   }
 
@@ -201,6 +202,8 @@ class Transaction{
   }
 
   toArray(){
+    this._result = this._dbs.query(this._query, this._params);
+
     return this._result
       .then(res => {
         return Promise.resolve(res.rows);
