@@ -6,7 +6,6 @@
 #project related files
 npm-debug.log
 node_modules/
-package-lock.json
 
 #tern files
 .tern-port
