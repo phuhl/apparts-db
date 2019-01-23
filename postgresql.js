@@ -1,6 +1,8 @@
 "use strict";
 
 const { Pool } = require('pg');
+const logger = require('apparts-logger');
+
 let pool;
 let idsAsBigInt = false;
 
@@ -121,6 +123,11 @@ class DBS {
     pool.end();
     next && next();
   }
+
+  raw(query, params){
+    return this._dbs.query(query, params);
+  }
+
   /* END DBS FUNCTIONS */
 };
 
@@ -288,6 +295,12 @@ module.exports.connect = function(c, next){
     idleTimeoutMillis: c.idleTimeoutMillis || 10000
   });
 
+  pool.on('error', (err, client) => {
+    // What to do?
+    logger.error(`Postgres DB-connection failed for host ${c.host}:${c.port},`
+                 + ` ${c.user}@${c.db} with ERROR: ${err}`);
+  });
+
   if(c.bigIntAsNumber){
     // Return Bigint and stuff as number, not as string
     const types = require('pg').types;
@@ -300,5 +313,13 @@ module.exports.connect = function(c, next){
     idsAsBigInt = true;
   }
 
-  next(false, new DBS(pool));
+  // Test connection
+  pool.connect()
+    .then(client => {
+      client.release();
+      next(false, new DBS(pool));
+    })
+    .catch(e => {
+      next(e);
+    });
 };

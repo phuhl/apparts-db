@@ -1,6 +1,6 @@
 {
   "name": "apparts-db",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Database drivers for multiple databases",
   "main": "index.js",
   "scripts": {
@@ -17,6 +17,7 @@
   "author": "Philipp Uhl",
   "license": "UNLICENSED",
   "dependencies": {
+    "apparts-logger": "git+ssh://git@ph-uhl.com/Apparts/apparts-logger#semver:^1.0.0",
     "pg": "^7.8.0"
   }
 }
