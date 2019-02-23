@@ -138,13 +138,16 @@ class Transaction{
     this._counter = 1;
   }
 
-  find(params, limit){
+  find(params, limit, order){
     let q = `SELECT * FROM public."${this._table}" WHERE `;
     let newVals = [];
     q += this._buildWhere(params, newVals);
     if(limit){
       q += ` LIMIT $${this._counter++}`;
       newVals.push(limit);
+    }
+    if(order){
+      q += order.map(arr => ` ORDER BY ${ arr.key } ${ arr.dir }`);
     }
     this._query = q;
     this._params = newVals;

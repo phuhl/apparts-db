@@ -1,6 +1,6 @@
 {
   "name": "apparts-db",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Database drivers for multiple databases",
   "main": "index.js",
   "scripts": {
