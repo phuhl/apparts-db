@@ -142,12 +142,12 @@ class Transaction{
     let q = `SELECT * FROM public."${this._table}" WHERE `;
     let newVals = [];
     q += this._buildWhere(params, newVals);
+    if(order){
+      q += order.map(arr => ` ORDER BY ${ arr.key } ${ arr.dir }`);
+    }
     if(limit){
       q += ` LIMIT $${this._counter++}`;
       newVals.push(limit);
-    }
-    if(order){
-      q += order.map(arr => ` ORDER BY ${ arr.key } ${ arr.dir }`);
     }
     this._query = q;
     this._params = newVals;
