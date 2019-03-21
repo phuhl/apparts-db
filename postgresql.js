@@ -109,6 +109,8 @@ class DBS {
       return type.maxLength ? `varchar(${type.maxLength})` : 'text';
     case 'time':
       return 'bigint';
+    case 'array_time':
+      return 'bigint[]';
     case 'array_id':
       if(idsAsBigInt){
         return 'bigint[]';
