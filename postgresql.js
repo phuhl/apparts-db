@@ -111,6 +111,8 @@ class DBS {
       return 'bigint';
     case 'array_time':
       return 'bigint[]';
+    case 'array_bigint':
+      return 'bigint[]';
     case 'array_id':
       if(idsAsBigInt){
         return 'bigint[]';
