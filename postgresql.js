@@ -1,7 +1,7 @@
 "use strict";
 
 const { Pool } = require('pg');
-const logger = require('apparts-logger');
+const logger = require('@apparts/logger');
 
 let pool;
 let idsAsBigInt = false;
