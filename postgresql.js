@@ -245,7 +245,7 @@ class Transaction {
           ")"
       )
       .join(",");
-    if (returning) {
+    if (returning && returning.length > 0) {
       q += " RETURNING " + returning.join(",");
     }
     return this._dbs
