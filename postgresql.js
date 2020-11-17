@@ -128,7 +128,7 @@ class DBS {
   }
 
   shutdown(next) {
-    pool.end();
+    this._dbs.end();
     next && next();
   }
 
