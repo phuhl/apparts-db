@@ -146,7 +146,7 @@ class Transaction {
     this._counter = 1;
   }
 
-  find(params, limit, order) {
+  find(params, limit, offset, order) {
     let q = `SELECT * FROM public."${this._table}" WHERE `;
     let newVals = [];
     q += this._buildWhere(params, newVals);
@@ -156,6 +156,10 @@ class Transaction {
     if (limit) {
       q += ` LIMIT $${this._counter++}`;
       newVals.push(limit);
+      if (offset) {
+        q += ` OFFSET $${this._counter++}`;
+        newVals.push(offset);
+      }
     }
     this._query = q;
     this._params = newVals;
@@ -211,17 +215,17 @@ class Transaction {
     }
   }
 
-  findById(id, limit) {
-    return this.find(id, limit);
+  findById(id, limit, offset) {
+    return this.find(id, limit, offset);
   }
 
-  findByIds(ids, limit) {
+  findByIds(ids, limit, offset) {
     Object.keys(ids).forEach((key) => {
       if (Array.isArray(ids[key])) {
         ids[key] = { op: "in", val: ids[key] };
       }
     });
-    return this.find(ids, limit);
+    return this.find(ids, limit, offset);
   }
 
   toArray() {
