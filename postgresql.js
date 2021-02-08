@@ -206,6 +206,9 @@ class Transaction {
       case "gt":
         newVals.push(val);
         return `"${key}" > $${this._counter++}`;
+      case "like":
+        newVals.push(val);
+        return `"${key}" LIKE $${this._counter++}`;
       case "and":
         return val
           .map((v) => this._decideOperator(key, v.op, v.val, newVals))
