@@ -279,8 +279,13 @@ class Transaction {
     let q = `UPDATE public."${this._table}" SET `;
     let counter = 1;
     let keys = Object.keys(c);
-    q += "(" + keys.map((k) => `"${k}"`).join(",") + ") = ";
-    q += "(" + keys.map((k) => `$${counter++}`).join(",") + ")";
+    if (keys.length > 1) {
+      q += "(" + keys.map((k) => `"${k}"`).join(",") + ") = ";
+      q += "(" + keys.map((k) => `$${counter++}`).join(",") + ")";
+    } else {
+      q += keys.map((k) => `"${k}"`) + " = ";
+      q += keys.map((k) => `$${counter++}`);
+    }
     q += " WHERE ";
     q += Object.keys(filter)
       .map((key, i) => `"${key}" = $${counter + i}`)
