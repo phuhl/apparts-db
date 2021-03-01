@@ -1,6 +1,6 @@
 "use strict";
 
-const { Pool } = require("pg");
+const { Pool, types: pgTypes } = require("pg");
 
 let pool;
 let idsAsBigInt = false;
@@ -128,8 +128,9 @@ class DBS {
   }
 
   shutdown(next) {
-    this._dbs.end();
-    next && next();
+    this._dbs.end(() => {
+      next && next();
+    });
   }
 
   raw(query, params) {
@@ -146,8 +147,8 @@ class Transaction {
     this._counter = 1;
   }
 
-  find(params, limit, order) {
-    let q = `SELECT * FROM public."${this._table}" WHERE `;
+  find(params, limit, offset, order) {
+    let q = `SELECT * FROM public."${this._table}" `;
     let newVals = [];
     q += this._buildWhere(params, newVals);
     if (order) {
@@ -156,6 +157,10 @@ class Transaction {
     if (limit) {
       q += ` LIMIT $${this._counter++}`;
       newVals.push(limit);
+      if (offset) {
+        q += ` OFFSET $${this._counter++}`;
+        newVals.push(offset);
+      }
     }
     this._query = q;
     this._params = newVals;
@@ -164,18 +169,24 @@ class Transaction {
 
   _buildWhere(params, newVals) {
     let keys = Object.keys(params);
+    if (keys.length === 0) {
+      return "";
+    }
     let vals = keys.map((key) => params[key]);
-    return keys
-      .map((key, i) => {
-        if (typeof vals[i] !== "object") {
-          newVals.push(vals[i]);
-          return `"${key}" = $${this._counter++}`;
-        } else {
-          let op = vals[i].op;
-          return this._decideOperator(key, op, vals[i].val, newVals);
-        }
-      })
-      .join(" AND ");
+    return (
+      "WHERE " +
+      keys
+        .map((key, i) => {
+          if (typeof vals[i] !== "object") {
+            newVals.push(vals[i]);
+            return `"${key}" = $${this._counter++}`;
+          } else {
+            let op = vals[i].op;
+            return this._decideOperator(key, op, vals[i].val, newVals);
+          }
+        })
+        .join(" AND ")
+    );
   }
 
   _decideOperator(key, op, val, newVals) {
@@ -202,6 +213,9 @@ class Transaction {
       case "gt":
         newVals.push(val);
         return `"${key}" > $${this._counter++}`;
+      case "like":
+        newVals.push(val);
+        return `"${key}" LIKE $${this._counter++}`;
       case "and":
         return val
           .map((v) => this._decideOperator(key, v.op, v.val, newVals))
@@ -211,17 +225,17 @@ class Transaction {
     }
   }
 
-  findById(id, limit) {
-    return this.find(id, limit);
+  findById(id, limit, offset) {
+    return this.find(id, limit, offset);
   }
 
-  findByIds(ids, limit) {
+  findByIds(ids, limit, offset) {
     Object.keys(ids).forEach((key) => {
       if (Array.isArray(ids[key])) {
         ids[key] = { op: "in", val: ids[key] };
       }
     });
-    return this.find(ids, limit);
+    return this.find(ids, limit, offset);
   }
 
   toArray() {
@@ -264,7 +278,7 @@ class Transaction {
         return Promise.resolve(res.rows);
       })
       .catch((err) => {
-        if (err.code == 23505) {
+        if (err.code === "23505") {
           return Promise.reject({
             msg: "ERROR, tried to insert, not unique",
             _code: 1,
@@ -297,13 +311,22 @@ class Transaction {
   }
 
   remove(params) {
-    let q = `DELETE FROM public."${this._table}" WHERE `;
+    let q = `DELETE FROM public."${this._table}" `;
     //    let keys = Object.keys(params);
     let newVals = [];
     q += this._buildWhere(params, newVals);
     //    q += keys.map((key, i) => `"${key}" = $${i + 1}` ).join(' AND ');
     //    let vals = keys.map(key => params[key]);
-    return this._dbs.query(q, newVals);
+    return this._dbs.query(q, newVals).catch((err) => {
+      if (err.code === "23503") {
+        return Promise.reject({
+          msg: "ERROR, tried to remove item that is still a reference",
+          _code: 2,
+        });
+      } else {
+        return Promise.reject(err);
+      }
+    });
   }
 
   drop() {
@@ -335,8 +358,7 @@ module.exports.connect = function (c, next, error) {
 
   if (c.bigIntAsNumber) {
     // Return Bigint and stuff as number, not as string
-    const types = require("pg").types;
-    types.setTypeParser(20, function (val) {
+    pgTypes.setTypeParser(20, function (val) {
       return parseInt(val);
     });
   }
