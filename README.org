@@ -1,0 +1,122 @@
+#+TITLE: @apparts/db
+#+DATE: [2021-03-25 Thu]
+#+AUTHOR: Philipp Uhl
+
+A wrapper and query builder around the [[https://node-postgres.com/][pg]].  The API exposed by this
+package is meant to be usable with other database system
+(e.g. mongodb), too. Thus this package shall serve as an adapter
+between the database driver and your code.
+
+* Usage
+
+Install:
+
+#+BEGIN_SRC sh
+npm i --save @apparts/db
+#+END_SRC
+
+#+BEGIN_SRC js
+const connect = require("@apparts/db");
+
+const DB_CONFIG = {
+  "use": "postgresql",
+  "postgresql": {
+    "host": "localhost",
+    "port": 5432,
+    "user": "postgres",
+    "pw": "password",
+    "db": "databasename",
+    "maxPoolSize": 5,
+    "connectionTimeoutMillis": 0,
+    "idleTimeoutMillis": 1000,
+    "bigIntAsNumber": true,
+    "logs": "errors",
+    "logParams": true
+  }
+};
+
+connect(DB_CONFIG, (e, dbs) => {
+  if(e) {
+    // handle error
+    throw e;
+  }
+  // use dbs
+});
+#+END_SRC
+
+** Raw SQL queries
+
+#+BEGIN_SRC js
+  try {
+    const { rows } = await dbs.raw(
+      `SELECT * FROM "testTable" WHERE a = $1 AND b = $2`,
+      [1, "test"]);
+    // use data here
+  } catch (e) {
+    // handle error
+  }
+#+END_SRC
+
+** Query builder
+
+#+BEGIN_SRC js
+  // insert something
+  const ids = await dbs.collection("testTable")
+        .insert([{ number: 100 }, { number: 101 }]);
+  // by default returns the "id" collumn
+  // ids[0].id -> 1
+
+
+  // insert with custom return values
+  const ids = await dbs.collection("testTable")
+        .insert([{ number: 102 }, { number: 103 }], returning = ["number"]);
+  // ids === [ { number: 102 }, { number: 103 } ]
+
+
+  // retrieve values
+  const filter = { id: { op: "in", vals: [2, 3] }};
+  // see below for everything you can stick into filter
+  const limit = 10, offset = 0, order = [{ key: "id", dir: "ASC" }];
+  await dbs.collection("testTable").find(filter, limit, offset, order);
+
+  // retrieve values by ids, easier
+  await dbs.collection("testTable")
+    .findByIds({ id: [ 2, 3 ]}, limit, offset, order);
+
+
+
+  // update values
+  const newContent = { number: 1000 };
+  await dbs.collection("testTable").update(filter, newContent);
+
+  // DEPRICATED, same as update:
+  await dbs.collection("testTable").updateOne(filter, newContent);
+
+
+  // delete values
+  await dbs.collection("testTable").remove(filter);
+
+
+  // drop table
+  await dbs.collection("testTable").drop();
+
+#+END_SRC
+
+*** Filters
+
+The filter is given as an object. The keys represent the column that
+the filter should be applied against. The value is either a value or
+an object that has ~op~ and ~val~ keys. ~op~ can be one of
+- ~in~ :: ~val~ then must be an array of possible values. The filter
+  accepts values that appear in the ~val~ array.
+- ~lte~ :: Less than, or equals. ~val~ must be a number, against the value
+  is combined.
+- ~lt~ :: Less than. ~val~ must be a number, against the value
+  is combined.
+- ~gte~ :: Greater than, or equals. ~val~ must be a number, against the value
+  is combined.
+- ~gt~ :: Greater than. ~val~ must be a number, against the value
+  is combined.
+- ~like~ :: Compares strings with the SQL like operator.
+- ~and~ :: Combines multiple filters and-wise. ~val~ must be an array of
+  objects, that have ~val~ and ~op~ keys of the form described here.
