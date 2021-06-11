@@ -157,6 +157,11 @@ class Transaction {
             msg: "ERROR, tried to insert, not unique",
             _code: 1,
           });
+        } else if (err.code === "23503") {
+          return Promise.reject({
+            msg: "ERROR, tried to insert, constraints not met",
+            _code: 3,
+          });
         } else {
           this._log("Error in insert:", q, params, err);
           return Promise.reject(err);

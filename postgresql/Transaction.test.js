@@ -170,6 +170,17 @@ CREATE TABLE "testTable2" (
       msg: "ERROR, tried to insert, not unique",
       _code: 1,
     });
+
+    await expect(
+      dbs.collection("testTable2").insert([{ testTableId: 10000 }])
+    ).rejects.toMatchObject({
+      msg: "ERROR, tried to insert, constraints not met",
+      _code: 3,
+    });
+
+    await expect(
+      dbs.collection("testTable2").find({}).toArray()
+    ).resolves.toStrictEqual([]);
   });
 
   test("Should findById/find", async () => {
@@ -409,7 +420,7 @@ CREATE TABLE "testTable2" (
 
     await expect(
       dbs.collection("testTable2").insert([{ testTableId: 3 }])
-    ).resolves.toMatchObject([{ id: 1 }]);
+    ).resolves.toMatchObject([{ id: 2 }]);
 
     await expect(
       dbs.collection("testTable").remove({ number: 2000 })
