@@ -43,7 +43,7 @@ class DBS {
     } else {
       prefix = "";
     }
-    let q = `CREATE TABLE public."${name}" (`;
+    let q = `CREATE TABLE "${name}" (`;
     q += []
       .concat(
         // fields
@@ -74,7 +74,7 @@ class DBS {
           .map(
             (i) =>
               `CONSTRAINT "${name}_${i.name}_fkey" FOREIGN KEY ` +
-              `("${i.name}") REFERENCES public."${i.foreign.table}" ` +
+              `("${i.name}") REFERENCES "${i.foreign.table}" ` +
               `(${i.foreign.field}) MATCH SIMPLE`
           )
       )

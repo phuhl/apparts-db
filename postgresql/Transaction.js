@@ -7,7 +7,7 @@ class Transaction {
   }
 
   find(params, limit, offset, order) {
-    let q = `SELECT * FROM public."${this._table}" `;
+    let q = `SELECT * FROM "${this._table}" `;
     const newVals = [];
     q += this._buildWhere(params, newVals);
     if (order) {
@@ -123,7 +123,7 @@ class Transaction {
     if (content.length === 0) {
       return Promise.resolve([]);
     }
-    let q = `INSERT INTO public."${this._table}" `;
+    let q = `INSERT INTO "${this._table}" `;
     const keys = Object.keys(content[0]);
     q += "(" + keys.map((key) => `"${key}"`).join(",") + ")";
     q += " VALUES ";
@@ -174,7 +174,7 @@ class Transaction {
   }
 
   async update(filter, c) {
-    let q = `UPDATE public."${this._table}" SET `;
+    let q = `UPDATE "${this._table}" SET `;
     const keys = Object.keys(c);
     if (keys.length > 1) {
       q += "(" + keys.map((k) => `"${k}"`).join(",") + ") = ";
@@ -204,7 +204,7 @@ class Transaction {
   }
 
   async remove(params) {
-    let q = `DELETE FROM public."${this._table}" `;
+    let q = `DELETE FROM "${this._table}" `;
     const newVals = [];
     q += this._buildWhere(params, newVals);
     try {
@@ -223,7 +223,7 @@ class Transaction {
   }
 
   async drop() {
-    const q = `DROP TABLE public."${this._table}"`;
+    const q = `DROP TABLE "${this._table}"`;
     try {
       return await this._dbs.query(q);
     } catch (e) {

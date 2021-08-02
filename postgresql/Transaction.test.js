@@ -28,7 +28,7 @@ describe("Log on error behavior", () => {
       [
         "Error in updateOne:",
         "\nQUERY:\n",
-        `UPDATE public."testTable" SET "number" = $1 WHERE "number" = $2`,
+        `UPDATE "testTable" SET "number" = $1 WHERE "number" = $2`,
         "\nPARAMS:\n",
         [1000, 100],
         "\nERROR:\n",
@@ -43,7 +43,7 @@ describe("Log on error behavior", () => {
       [
         "Error in remove:",
         "\nQUERY:\n",
-        `DELETE FROM public."testTable" WHERE "number" = $1`,
+        `DELETE FROM "testTable" WHERE "number" = $1`,
         "\nPARAMS:\n",
         [100],
         "\nERROR:\n",
@@ -58,7 +58,7 @@ describe("Log on error behavior", () => {
       [
         "Error in drop:",
         "\nQUERY:\n",
-        `DROP TABLE public."testTable"`,
+        `DROP TABLE "testTable"`,
         "\nPARAMS:\n",
         null,
         "\nERROR:\n",
@@ -74,7 +74,7 @@ describe("Log on error behavior", () => {
       [
         "Error in insert:",
         "\nQUERY:\n",
-        `INSERT INTO public."testTable" ("a") VALUES ($1) RETURNING "id"`,
+        `INSERT INTO "testTable" ("a") VALUES ($1) RETURNING "id"`,
         "\nPARAMS:\n",
         [2],
         "\nERROR:\n",
@@ -90,7 +90,7 @@ describe("Log on error behavior", () => {
       [
         "Error in toArray:",
         "\nQUERY:\n",
-        `SELECT * FROM public."testTable" WHERE "a" = $1`,
+        `SELECT * FROM "testTable" WHERE "a" = $1`,
         "\nPARAMS:\n",
         [2],
         "\nERROR:\n",
@@ -105,7 +105,7 @@ describe("Log on error behavior", () => {
       [
         "Error in toArray:",
         "\nQUERY:\n",
-        `SELECT * FROM public."testTable" WHERE "a" = $1`,
+        `SELECT * FROM "testTable" WHERE "a" = $1`,
         "\nPARAMS:\n",
         [2],
         "\nERROR:\n",
@@ -120,7 +120,7 @@ describe("Log on error behavior", () => {
       [
         "Error in toArray:",
         "\nQUERY:\n",
-        `SELECT * FROM public."testTable" WHERE "id" IN ($1)`,
+        `SELECT * FROM "testTable" WHERE "id" IN ($1)`,
         "\nPARAMS:\n",
         [2],
         "\nERROR:\n",
