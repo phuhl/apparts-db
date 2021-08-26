@@ -30,6 +30,8 @@ const DB_CONFIG = {
     "connectionTimeoutMillis": 0,
     "idleTimeoutMillis": 1000,
     "bigIntAsNumber": true,
+    // use json type when finding an array, defaults to false
+    "arrayAsJSON": true,
     "logs": "errors",
     "logParams": true
   }

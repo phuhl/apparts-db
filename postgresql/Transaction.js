@@ -3,6 +3,7 @@ class Transaction {
     this._dbs = pool;
     this._table = col;
     this._counter = 1;
+    this._config = dbs._config;
     this._log = (...ps) => dbs._log(...ps);
   }
 
@@ -119,6 +120,14 @@ class Transaction {
       });
   }
 
+  _transformArray(array) {
+    if (this._config.arrayAsJSON) {
+      return JSON.stringify(array);
+    } else {
+      return array;
+    }
+  }
+
   insert(content, returning = ["id"]) {
     if (content.length === 0) {
       return Promise.resolve([]);
@@ -142,7 +151,7 @@ class Transaction {
       [],
       content.map((c) =>
         keys.map((k) =>
-          Array.isArray(c[k]) ? "{" + c[k].join(",") + "}" : c[k]
+          Array.isArray(c[k]) ? this._transformArray(c[k]) : c[k]
         )
       )
     );
@@ -186,7 +195,7 @@ class Transaction {
     const newVals = [];
     q += " " + this._buildWhere(filter, newVals);
     const vals = keys
-      .map((k) => (Array.isArray(c[k]) ? "{" + c[k].join(",") + "}" : c[k]))
+      .map((k) => (Array.isArray(c[k]) ? this._transformArray(c[k]) : c[k]))
       .concat(newVals);
     try {
       return await this._dbs.query(q, vals);

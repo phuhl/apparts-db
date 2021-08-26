@@ -460,3 +460,82 @@ CREATE TABLE "testTable2" (
     logMock.mockRestore();
   });
 });
+
+describe("Postgresql Transaction JSON Data types", () => {
+  let dbs;
+  beforeAll(async () => {
+    dbs = await setupDbs({ logs: "errors", arrayAsJSON: true });
+  });
+  afterAll(async () => {
+    await teardownDbs(dbs);
+  });
+
+  test("Should insert", async () => {
+    await dbs.raw(`
+CREATE TABLE "testJson" (
+       id SERIAL PRIMARY KEY,
+       "jsonField" json,
+       "jsonArray" json
+)`);
+
+    await expect(
+      dbs
+        .collection("testJson")
+        .insert([{ jsonField: { a: 1 }, jsonArray: [1, 2, 3] }])
+    ).resolves.toMatchObject([{ id: 1 }]);
+  });
+  test("Should update/updateOne", async () => {
+    await expect(
+      dbs.collection("testJson").updateOne({ id: 1 }, { jsonArray: [1, 2, 4] })
+    ).resolves.toMatchObject({ rowCount: 1 });
+  });
+
+  test("Should find", async () => {
+    await expect(
+      dbs.collection("testJson").find({}).toArray()
+    ).resolves.toMatchObject([
+      { id: 1, jsonArray: [1, 2, 4], jsonField: { a: 1 } },
+    ]);
+  });
+});
+
+describe("Postgresql Transaction Non-JSON Data types", () => {
+  let dbs;
+  beforeAll(async () => {
+    dbs = await setupDbs({ logs: "errors" });
+  });
+  afterAll(async () => {
+    await teardownDbs(dbs);
+  });
+
+  test("Should insert", async () => {
+    await dbs.raw(`
+CREATE TABLE "testNonJson" (
+       id SERIAL PRIMARY KEY,
+       "jsonField" json,
+       "nonJsonArray" integer[]
+)`);
+
+    await expect(
+      dbs
+        .collection("testNonJson")
+        .insert([{ jsonField: { a: 1 }, nonJsonArray: [1, 2, 3] }])
+    ).resolves.toMatchObject([{ id: 1 }]);
+  });
+
+  test("Should update/updateOne", async () => {
+    await expect(
+      dbs
+        .collection("testNonJson")
+        .updateOne({ id: 1 }, { nonJsonArray: [1, 2, 4] })
+    ).resolves.toMatchObject({ rowCount: 1 });
+  });
+
+  test("Should find", async () => {
+    await expect(
+      dbs.collection("testNonJson").find({}).toArray()
+    ).resolves.toMatchObject([
+      { id: 1, nonJsonArray: [1, 2, 4], jsonField: { a: 1 } },
+    ]);
+  });
+});
