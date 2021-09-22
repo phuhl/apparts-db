@@ -122,3 +122,33 @@ an object that has ~op~ and ~val~ keys. ~op~ can be one of
 - ~like~ :: Compares strings with the SQL like operator.
 - ~and~ :: Combines multiple filters and-wise. ~val~ must be an array of
   objects, that have ~val~ and ~op~ keys of the form described here.
+  
+  
+**** Filter Grammar
+
+The filter syntax is like this:
+
+#+BEGIN_SRC js
+const filter = { <key>: <matcher>, ...};
+// where <key> is a key from the type and
+// where matcher is
+<matcher> = <value>
+        | { op: <numoperator>, val: <int> }
+        | { op: <stroperator>, val: <string> }
+        | { op: "and", val: <matcher> } // logical and for all subconditions
+        | { op: "in", val: [<values>] } // one of the values
+<numoperator> = lte  // less than or equals
+              | lt   // less than
+              | gte  // greater than or equals
+              | gt   // greater than
+<stroperator> = like // sql like, a string comparison where the "%" character
+                     // will be matched against anything. E.g. "bread%crumb"
+                     // matches "bread crumb" or "bread eating crumb".
+<value> = <string>
+        | <int>
+        | <boolean>
+        | null
+<values> = <value>, <values>
+         |  // nothing
+#+END_SRC
+
