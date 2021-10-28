@@ -152,6 +152,12 @@ CREATE TABLE "testTable2" (
        FOREIGN KEY ("testTableId") REFERENCES "testTable"(id)
 )`);
 
+    await dbs.raw(`
+CREATE TABLE "testTable3" (
+       id SERIAL PRIMARY KEY,
+       "object1" json NOT NULL
+)`);
+
     await expect(dbs.collection("testTable").insert([])).resolves.toMatchObject(
       []
     );
@@ -181,6 +187,16 @@ CREATE TABLE "testTable2" (
     await expect(
       dbs.collection("testTable2").find({}).toArray()
     ).resolves.toStrictEqual([]);
+
+    await expect(
+      dbs
+        .collection("testTable3")
+        .insert([{ object1: { object2: { tokens: "abc" } } }])
+    ).resolves.toStrictEqual([{ id: 1 }]);
+
+    await expect(
+      dbs.collection("testTable3").insert([{ object1: { tokens: "abc" } }])
+    ).resolves.toStrictEqual([{ id: 2 }]);
   });
 
   test("Should findById/find", async () => {
@@ -255,6 +271,55 @@ CREATE TABLE "testTable2" (
       { id: 1, number: 100 },
       { id: 2, number: 101 },
     ]);
+
+    await expect(
+      dbs
+        .collection("testTable3")
+        .find({
+          object1: {
+            op: "of",
+            val: {
+              path: ["object2", "tokens"],
+              value: "abc",
+            },
+          },
+        })
+        .toArray()
+    ).resolves.toMatchObject([
+      { id: 1, object1: { object2: { tokens: "abc" } } },
+    ]);
+
+    await expect(
+      dbs
+        .collection("testTable3")
+        .find({
+          object1: {
+            op: "of",
+            val: {
+              path: ["tokens"],
+              value: "abc",
+            },
+          },
+        })
+        .toArray()
+    ).resolves.toMatchObject([{ id: 2, object1: { tokens: "abc" } }]);
+
+    expect(async () => {
+      await dbs
+        .collection("testTable3")
+        .find({
+          object1: {
+            op: "of",
+            val: {
+              path: [],
+              value: "abc",
+            },
+          },
+        })
+        .toArray();
+    }).rejects.toThrow(
+      "ERROR, operator 'of' requires at least one path element. You submitted []."
+    );
   });
 
   test("Should findByIds", async () => {
