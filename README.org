@@ -111,6 +111,8 @@ the filter should be applied against. The value is either a value or
 an object that has ~op~ and ~val~ keys. ~op~ can be one of
 - ~in~ :: ~val~ then must be an array of possible values. The filter
   accepts values that appear in the ~val~ array.
+- ~of~ :: ~val~ is an object with the keys ~path~ (an array of keys for the nested json) 
+  and ~value~ (the filter value). 
 - ~lte~ :: Less than, or equals. ~val~ must be a number, against the value
   is combined.
 - ~lt~ :: Less than. ~val~ must be a number, against the value
