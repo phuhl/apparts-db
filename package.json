@@ -19,12 +19,12 @@
   "author": "Philipp Uhl",
   "license": "MIT",
   "dependencies": {
+    "jest-circus": "^27.3.1",
     "pg": "^8.0.0"
   },
   "devDependencies": {
     "@apparts/config": "^1.0.5",
-    "jest": "^26.6.0",
-    "jest-circus": "^26.6.3",
+    "jest": "^27.3.1",
     "supertest": "^6.1.3"
   }
 }
