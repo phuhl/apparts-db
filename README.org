@@ -139,6 +139,8 @@ const filter = { <key>: <matcher>, ...};
         | { op: <stroperator>, val: <string> }
         | { op: "and", val: <matcher> } // logical and for all subconditions
         | { op: "in", val: [<values>] } // one of the values
+        | { op: "of", path: [<values>], value: <string> } // match the prop of a nested JSON object
+        
 <numoperator> = lte  // less than or equals
               | lt   // less than
               | gte  // greater than or equals
