@@ -303,6 +303,23 @@ CREATE TABLE "testTable3" (
         })
         .toArray()
     ).resolves.toMatchObject([{ id: 2, object1: { tokens: "abc" } }]);
+
+    expect(async () => {
+      await dbs
+        .collection("testTable3")
+        .find({
+          object1: {
+            op: "of",
+            val: {
+              path: [],
+              value: "abc",
+            },
+          },
+        })
+        .toArray();
+    }).rejects.toThrow(
+      "ERROR, operator 'of' requires at least one path element. You submitted []."
+    );
   });
 
   test("Should findByIds", async () => {

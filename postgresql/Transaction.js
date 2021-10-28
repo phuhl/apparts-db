@@ -67,6 +67,11 @@ class Transaction {
           `"${key}" IN (` + val.map(() => `$${this._counter++}`).join(",") + ")"
         );
       case "of":
+        if (val.path.length < 1) {
+          throw new Error(
+            "ERROR, operator 'of' requires at least one path element. You submitted []."
+          );
+        }
         val.path.forEach((v) => newVals.push(v));
         newVals.push(val.value);
         return (
