@@ -66,6 +66,20 @@ class Transaction {
         return (
           `"${key}" IN (` + val.map(() => `$${this._counter++}`).join(",") + ")"
         );
+      case "of":
+        val.path.forEach((v) => newVals.push(v));
+        newVals.push(val.value);
+        return (
+          `"${key}"` +
+          (val.path.length === 1
+            ? ""
+            : "->" +
+              val.path
+                .slice(0, -1)
+                .map(() => `$${this._counter++}`)
+                .join("->")) +
+          `->>$${this._counter++} = $${this._counter++}`
+        );
       case "lte":
         newVals.push(val);
         return `"${key}" <= $${this._counter++}`;
