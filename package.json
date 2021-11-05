@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "description": "Database drivers for multiple databases",
   "module": "src/index.ts",
-  "main": "build/src/index.js",
+  "main": "build/index.js",
   "scripts": {
     "testOne": "jest",
     "test": "jest --watch --detectOpenHandles",
