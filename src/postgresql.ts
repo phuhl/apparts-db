@@ -1,11 +1,16 @@
 "use strict";
 
-const { Pool, types: pgTypes } = require("pg");
-const DBS = require("./postgresql/DBS.js");
+import { PGConfig } from "./Config";
+import { Pool, types as pgTypes } from "pg";
+import DBS from "./postgresql/DBS";
 
-let pool;
+let pool: undefined | Pool;
 
-module.exports.connect = function (c, next, error) {
+const connectPG = function (
+  c: PGConfig,
+  next: (error: boolean | any, dbs?: DBS) => void,
+  error?: (err: any) => void
+) {
   pool = new Pool({
     host: c.host,
     port: c.port,
@@ -17,7 +22,7 @@ module.exports.connect = function (c, next, error) {
     idleTimeoutMillis: c.idleTimeoutMillis || 10000,
   });
 
-  pool.on("error", (err, client) => {
+  pool.on("error", (err) => {
     // What to do?
     console.log(
       `Postgres DB-connection failed for host ${c.host}:${c.port},` +
@@ -44,3 +49,5 @@ module.exports.connect = function (c, next, error) {
       next(e);
     });
 };
+
+export default connectPG;

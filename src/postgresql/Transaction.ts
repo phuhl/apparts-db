@@ -1,13 +1,39 @@
+import { Pool, QueryResult } from "pg";
+import { PGConfig } from "../Config";
+
+type LogFunc = (
+  message: string,
+  query: string,
+  params: Params,
+  error: any
+) => void;
+export type Params = { [u: string]: any };
+export type Id = string | number;
+type Order = { key: string; dir: "ASC" | "DESC" }[];
+
 class Transaction {
-  constructor(pool, col, dbs) {
+  _dbs: Pool;
+  _table: string;
+  _counter: number;
+  _config: PGConfig;
+  _log: LogFunc;
+  _query?: string;
+  _params?: any[];
+  _result?: Promise<QueryResult<any[]>>;
+
+  constructor(
+    pool: Pool,
+    col: string,
+    dbs: { config: PGConfig; log: LogFunc }
+  ) {
     this._dbs = pool;
     this._table = col;
     this._counter = 1;
-    this._config = dbs._config;
-    this._log = (...ps) => dbs._log(...ps);
+    this._config = dbs.config;
+    this._log = (...ps) => dbs.log(...ps);
   }
 
-  find(params, limit, offset, order) {
+  find(params: Params, limit?: number, offset?: number, order?: Order) {
     let q = `SELECT * FROM "${this._table}" `;
     const newVals = [];
     q += this._buildWhere(params, newVals);
@@ -34,7 +60,7 @@ class Transaction {
     return this;
   }
 
-  _buildWhere(params, newVals) {
+  _buildWhere(params: Params, newVals: any[]) {
     const keys = Object.keys(params);
     if (keys.length === 0) {
       return "";
@@ -56,13 +82,13 @@ class Transaction {
     );
   }
 
-  _decideOperator(key, op, val, newVals) {
+  _decideOperator(key: string, op: string, val: any, newVals: any[]) {
     switch (op) {
       case "any":
         newVals.push(val);
         return `$${this._counter++} = ANY("${key}")`;
       case "in":
-        val.forEach((v) => newVals.push(v));
+        val.forEach((v: any) => newVals.push(v));
         return (
           `"${key}" IN (` + val.map(() => `$${this._counter++}`).join(",") + ")"
         );
@@ -72,7 +98,7 @@ class Transaction {
             "ERROR, operator 'of' requires at least one path element. You submitted []."
           );
         }
-        val.path.forEach((v) => newVals.push(v));
+        val.path.forEach((v: any) => newVals.push(v));
         newVals.push(val.value);
         return (
           `"${key}"` +
@@ -101,7 +127,7 @@ class Transaction {
         newVals.push(val);
         return `"${key}" LIKE $${this._counter++}`;
       case "and":
-        return val
+        return (val as { op: string; val: any }[])
           .map((v) => this._decideOperator(key, v.op, v.val, newVals))
           .join(" AND ");
       default:
@@ -109,11 +135,11 @@ class Transaction {
     }
   }
 
-  findById(id, limit, offset, order) {
+  findById(id: Params, limit?: number, offset?: number, order?: Order) {
     return this.find(id, limit, offset, order);
   }
 
-  findByIds(ids, limit, offset, order) {
+  findByIds(ids: Params, limit?: number, offset?: number, order?: Order) {
     const params = {};
     Object.keys(ids).forEach((key) => {
       if (Array.isArray(ids[key])) {
@@ -139,7 +165,7 @@ class Transaction {
       });
   }
 
-  _transformArray(array) {
+  _transformArray(array: any[]) {
     if (this._config.arrayAsJSON) {
       return JSON.stringify(array);
     } else {
@@ -147,7 +173,7 @@ class Transaction {
     }
   }
 
-  insert(content, returning = ["id"]) {
+  insert(content: any[], returning = ["id"]) {
     if (content.length === 0) {
       return Promise.resolve([]);
     }
@@ -157,9 +183,9 @@ class Transaction {
     q += " VALUES ";
     q += content
       .map(
-        (c, i) =>
+        (_, i) =>
           "(" +
-          keys.map((k, j) => `$${i * keys.length + (j + 1)}`).join(",") +
+          keys.map((_, j) => `$${i * keys.length + (j + 1)}`).join(",") +
           ")"
       )
       .join(",");
@@ -197,11 +223,11 @@ class Transaction {
       });
   }
 
-  updateOne(filter, c) {
+  updateOne(filter: Params, c: { [p: string]: any }) {
     return this.update(filter, c);
   }
 
-  async update(filter, c) {
+  async update(filter: Params, c: { [p: string]: any }) {
     let q = `UPDATE "${this._table}" SET `;
     const keys = Object.keys(c);
     if (keys.length > 1) {
@@ -219,7 +245,7 @@ class Transaction {
     try {
       return await this._dbs.query(q, vals);
     } catch (e) {
-      if (e.code === "23505") {
+      if ((e as { code: string }).code === "23505") {
         return Promise.reject({
           msg: "ERROR, tried to update, not unique",
           _code: 1,
@@ -231,14 +257,14 @@ class Transaction {
     }
   }
 
-  async remove(params) {
+  async remove(params: Params) {
     let q = `DELETE FROM "${this._table}" `;
     const newVals = [];
     q += this._buildWhere(params, newVals);
     try {
       return await this._dbs.query(q, newVals);
     } catch (err) {
-      if (err.code === "23503") {
+      if ((err as { code: string }).code === "23503") {
         return Promise.reject({
           msg: "ERROR, tried to remove item that is still a reference",
           _code: 2,
@@ -261,4 +287,4 @@ class Transaction {
   }
 }
 
-module.exports = Transaction;
+export default Transaction;

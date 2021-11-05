@@ -86,10 +86,10 @@ CREATE TABLE "testTable" (
        id SERIAL PRIMARY KEY,
        number INT NOT NULL
 )`);
-    await dbs.raw(`INSERT INTO "testTable" ( number ) VALUES ($1), ($2)`, [
-      1,
-      7,
-    ]);
+    await dbs.raw(
+      `INSERT INTO "testTable" ( number ) VALUES ($1), ($2)`,
+      [1, 7]
+    );
     const { rows } = await dbs.raw(`SELECT number FROM "testTable"`);
     expect(rows).toEqual([{ number: 1 }, { number: 7 }]);
   });

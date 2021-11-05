@@ -4,4 +4,12 @@ module.exports = {
   clearMocks: true,
   coveragePathIgnorePatterns: ["<rootDir>/node_modules/", "<rootDir>/tests"],
   watchPathIgnorePatterns: ["/\\.#.*", "/.*~", "/#.*#"],
+
+  testEnvironment: "node",
+  transform: {
+    //    "^.+\\.tsx?$": "ts-jest",
+    "^.+\\.[tj]s$": "ts-jest",
+  },
+  moduleFileExtensions: ["ts", "js", "json", "node"],
+  testPathIgnorePatterns: ["build", "node_modules"],
 };

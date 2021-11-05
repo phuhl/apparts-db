@@ -1,4 +1,4 @@
-const connect = require("./");
+const connect = require("./").default;
 const { dbConfig } = require("./tests/pg")({
   testName: "postgresqltest",
 });

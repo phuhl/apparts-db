@@ -1,8 +1,8 @@
 const { setupDbs, teardownDbs } = require("../tests/pg")({
   testName: "transactiontest",
 });
-const DBS = require("./DBS.js");
-const Transaction = require("./Transaction.js");
+const DBS = require("./DBS").default;
+const Transaction = require("./Transaction").default;
 
 describe("Log on error behavior", () => {
   let logMock, e, query, dbs;
@@ -19,7 +19,8 @@ describe("Log on error behavior", () => {
   });
 
   test("Should log on updateOne", async () => {
-    const t = new Transaction({ query }, "testTable", dbs);
+    const t = dbs.collection("testTable");
+    t._dbs = { query };
 
     await expect(t.updateOne({ number: 100 }, { number: 1000 })).rejects.toBe(
       e
@@ -37,7 +38,9 @@ describe("Log on error behavior", () => {
     ]);
   });
   test("Should log on remove", async () => {
-    const t = new Transaction({ query }, "testTable", dbs);
+    const t = dbs.collection("testTable");
+    t._dbs = { query };
+
     await expect(t.remove({ number: 100 })).rejects.toBe(e);
     expect(logMock.mock.calls).toEqual([
       [
@@ -52,7 +55,9 @@ describe("Log on error behavior", () => {
     ]);
   });
   test("Should log on drop", async () => {
-    const t = new Transaction({ query }, "testTable", dbs);
+    const t = dbs.collection("testTable");
+    t._dbs = { query };
+
     await expect(t.drop()).rejects.toBe(e);
     expect(logMock.mock.calls).toEqual([
       [
@@ -68,7 +73,9 @@ describe("Log on error behavior", () => {
   });
 
   test("Should log on insert", async () => {
-    const t = new Transaction({ query }, "testTable", dbs);
+    const t = dbs.collection("testTable");
+    t._dbs = { query };
+
     await expect(t.insert([{ a: 2 }])).rejects.toBe(e);
     expect(logMock.mock.calls).toEqual([
       [
@@ -84,7 +91,9 @@ describe("Log on error behavior", () => {
   });
 
   test("Should log on find", async () => {
-    const t = new Transaction({ query }, "testTable", dbs);
+    const t = dbs.collection("testTable");
+    t._dbs = { query };
+
     await expect(t.find({ a: 2 }).toArray()).rejects.toBe(e);
     expect(logMock.mock.calls).toEqual([
       [
@@ -99,7 +108,9 @@ describe("Log on error behavior", () => {
     ]);
   });
   test("Should log on findById", async () => {
-    const t = new Transaction({ query }, "testTable", dbs);
+    const t = dbs.collection("testTable");
+    t._dbs = { query };
+
     await expect(t.findById({ a: 2 }).toArray()).rejects.toBe(e);
     expect(logMock.mock.calls).toEqual([
       [
@@ -114,7 +125,9 @@ describe("Log on error behavior", () => {
     ]);
   });
   test("Should log on findByIds", async () => {
-    const t = new Transaction({ query }, "testTable", dbs);
+    const t = dbs.collection("testTable");
+    t._dbs = { query };
+
     await expect(t.findByIds({ id: [2] }).toArray()).rejects.toBe(e);
     expect(logMock.mock.calls).toEqual([
       [
