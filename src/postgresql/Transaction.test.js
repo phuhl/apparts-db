@@ -400,6 +400,10 @@ CREATE TABLE "testTable3" (
         .findByIds({ id: [1, 2, 3] }, 1, 1)
         .toArray()
     ).resolves.toMatchObject([{ id: 2, number: 101 }]);
+
+    await expect(
+      dbs.collection("testTable").findByIds({ id: [] }).toArray()
+    ).resolves.toMatchObject([]);
   });
 
   test("Should find in order", async () => {

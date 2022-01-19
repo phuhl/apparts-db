@@ -88,6 +88,9 @@ class Transaction {
         newVals.push(val);
         return `$${this._counter++} = ANY("${key}")`;
       case "in":
+        if (val.length === 0) {
+          return " FALSE ";
+        }
         val.forEach((v: any) => newVals.push(v));
         return (
           `"${key}" IN (` + val.map(() => `$${this._counter++}`).join(",") + ")"
