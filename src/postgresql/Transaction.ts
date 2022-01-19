@@ -42,7 +42,7 @@ class Transaction {
         " ORDER BY" +
         order
           .map(
-            (arr) => ` ${arr.key}
+            (arr) => ` "${arr.key}"
     ${arr.dir}`
           )
           .join(" , ");
